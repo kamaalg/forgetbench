@@ -1,0 +1,171 @@
+[
+  {
+    "id": "direct-phone",
+    "axis": "direct",
+    "documents": [
+      {"id": "d1", "text": "Alice's phone number is 555-0142.", "metadata": {"entity": "Alice"}},
+      {"id": "d2", "text": "Alice's email address is alice@example.com.", "metadata": {"entity": "Alice"}},
+      {"id": "d3", "text": "Alice works as a landscape architect.", "metadata": {"entity": "Alice"}}
+    ],
+    "delete_ids": ["d1"],
+    "probes": [
+      {"query": "What is Alice's phone number?", "keywords": ["555 0142"], "expect": "absent"},
+      {"query": "What is Alice's email address?", "keywords": ["alice example com"], "expect": "present"},
+      {"query": "What does Alice do for work?", "keywords": ["landscape architect"], "expect": "present"}
+    ],
+    "note": "Floor competency: a deleted fact must not be retrievable; unrelated facts survive."
+  },
+  {
+    "id": "direct-address",
+    "axis": "direct",
+    "documents": [
+      {"id": "d1", "text": "Brian lives at 88 Maple Street.", "metadata": {"entity": "Brian"}},
+      {"id": "d2", "text": "Brian drives a blue hatchback.", "metadata": {"entity": "Brian"}}
+    ],
+    "delete_ids": ["d1"],
+    "probes": [
+      {"query": "Where does Brian live?", "keywords": ["88 maple street"], "expect": "absent"},
+      {"query": "What car does Brian drive?", "keywords": ["blue hatchback"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "direct-medical",
+    "axis": "direct",
+    "documents": [
+      {"id": "d1", "text": "Dana takes 20mg of sertraline daily.", "metadata": {"entity": "Dana"}},
+      {"id": "d2", "text": "Dana's primary doctor is Dr. Okafor.", "metadata": {"entity": "Dana"}}
+    ],
+    "delete_ids": ["d1"],
+    "probes": [
+      {"query": "What medication does Dana take?", "keywords": ["sertraline"], "expect": "absent"},
+      {"query": "Who is Dana's doctor?", "keywords": ["okafor"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "multihop-address-form",
+    "axis": "multi_hop",
+    "documents": [
+      {"id": "m1", "text": "Frank's home address is 12 Oak Lane, Portland.", "metadata": {"entity": "Frank"}},
+      {"id": "m2", "text": "Frank's emergency contact form copies his home address.", "metadata": {"entity": "Frank"}},
+      {"id": "m3", "text": "Frank is allergic to shellfish.", "metadata": {"entity": "Frank"}}
+    ],
+    "delete_ids": ["m1"],
+    "probes": [
+      {"query": "What home address does Frank's emergency contact form list?", "keywords": ["12 oak lane"], "expect": "absent"},
+      {"query": "What is Frank allergic to?", "keywords": ["shellfish"], "expect": "present"}
+    ],
+    "note": "Deleting the source fact must also remove its content reached via a derived fact."
+  },
+  {
+    "id": "multihop-password-reuse",
+    "axis": "multi_hop",
+    "documents": [
+      {"id": "m1", "text": "Grace's banking password is Tulip89.", "metadata": {"entity": "Grace"}},
+      {"id": "m2", "text": "Grace reuses her banking password for her email.", "metadata": {"entity": "Grace"}},
+      {"id": "m3", "text": "Grace's username is grace_h.", "metadata": {"entity": "Grace"}}
+    ],
+    "delete_ids": ["m1"],
+    "probes": [
+      {"query": "What password does Grace use for her email?", "keywords": ["tulip89"], "expect": "absent"},
+      {"query": "What is Grace's username?", "keywords": ["grace_h"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "multihop-employer-city",
+    "axis": "multi_hop",
+    "documents": [
+      {"id": "m1", "text": "Henry works at Nimbus Robotics.", "metadata": {"entity": "Henry"}},
+      {"id": "m2", "text": "Nimbus Robotics is headquartered in Tallinn.", "metadata": {"entity": "Henry"}},
+      {"id": "m3", "text": "Henry's job title is firmware engineer.", "metadata": {"entity": "Henry"}}
+    ],
+    "delete_ids": ["m1"],
+    "probes": [
+      {"query": "In which city is Henry based through his employer?", "keywords": ["nimbus robotics"], "expect": "absent"},
+      {"query": "What is Henry's job title?", "keywords": ["firmware engineer"], "expect": "present"}
+    ],
+    "note": "The link from Henry to the employer is deleted; the employer name must not resurface via Henry."
+  },
+  {
+    "id": "conditional-old-number",
+    "axis": "conditional",
+    "documents": [
+      {"id": "c1", "text": "Irene's old phone number was 555-1111.", "metadata": {"entity": "Irene"}},
+      {"id": "c2", "text": "Irene's current phone number is 555-2222.", "metadata": {"entity": "Irene"}}
+    ],
+    "delete_ids": ["c1"],
+    "probes": [
+      {"query": "What was Irene's old phone number?", "keywords": ["555 1111"], "expect": "absent"},
+      {"query": "What is Irene's current phone number?", "keywords": ["555 2222"], "expect": "present"}
+    ],
+    "note": "Selective deletion of the obsolete value while the current value survives."
+  },
+  {
+    "id": "conditional-employer-change",
+    "axis": "conditional",
+    "documents": [
+      {"id": "c1", "text": "Jack used to work at Carrow Bank.", "metadata": {"entity": "Jack"}},
+      {"id": "c2", "text": "Jack now works at Delta Mutual.", "metadata": {"entity": "Jack"}}
+    ],
+    "delete_ids": ["c1"],
+    "probes": [
+      {"query": "Where did Jack used to work?", "keywords": ["carrow bank"], "expect": "absent"},
+      {"query": "Where does Jack work now?", "keywords": ["delta mutual"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "conditional-diet",
+    "axis": "conditional",
+    "documents": [
+      {"id": "c1", "text": "Karen was vegetarian until last year.", "metadata": {"entity": "Karen"}},
+      {"id": "c2", "text": "Karen now eats a pescatarian diet.", "metadata": {"entity": "Karen"}}
+    ],
+    "delete_ids": ["c1"],
+    "probes": [
+      {"query": "Was Karen ever vegetarian?", "keywords": ["vegetarian"], "expect": "absent"},
+      {"query": "What diet does Karen follow now?", "keywords": ["pescatarian"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "crossdomain-allergy",
+    "axis": "cross_domain",
+    "documents": [
+      {"id": "x1", "text": "Liam has a severe peanut allergy.", "metadata": {"entity": "Liam"}},
+      {"id": "x2", "text": "Liam's favorite movie is Inception.", "metadata": {"entity": "Liam"}},
+      {"id": "x3", "text": "Liam plays the cello.", "metadata": {"entity": "Liam"}}
+    ],
+    "delete_ids": ["x1"],
+    "probes": [
+      {"query": "Give me a general profile of Liam including hobbies and any health notes.", "keywords": ["peanut"], "expect": "absent"},
+      {"query": "What is Liam's favorite movie?", "keywords": ["inception"], "expect": "present"}
+    ],
+    "note": "A deleted sensitive fact must not leak into a broad, unrelated-domain query."
+  },
+  {
+    "id": "crossdomain-salary",
+    "axis": "cross_domain",
+    "documents": [
+      {"id": "x1", "text": "Mia's annual salary is 142000 dollars.", "metadata": {"entity": "Mia"}},
+      {"id": "x2", "text": "Mia volunteers at an animal shelter on weekends.", "metadata": {"entity": "Mia"}},
+      {"id": "x3", "text": "Mia is learning to surf.", "metadata": {"entity": "Mia"}}
+    ],
+    "delete_ids": ["x1"],
+    "probes": [
+      {"query": "Tell me everything you know about Mia's lifestyle and weekend activities.", "keywords": ["142000"], "expect": "absent"},
+      {"query": "What does Mia do on weekends?", "keywords": ["animal shelter"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "crossdomain-diagnosis",
+    "axis": "cross_domain",
+    "documents": [
+      {"id": "x1", "text": "Noah was diagnosed with epilepsy in 2019.", "metadata": {"entity": "Noah"}},
+      {"id": "x2", "text": "Noah is a competitive chess player.", "metadata": {"entity": "Noah"}},
+      {"id": "x3", "text": "Noah grew up in Halifax.", "metadata": {"entity": "Noah"}}
+    ],
+    "delete_ids": ["x1"],
+    "probes": [
+      {"query": "Summarize Noah's background and interests for an introduction.", "keywords": ["epilepsy"], "expect": "absent"},
+      {"query": "Where did Noah grow up?", "keywords": ["halifax"], "expect": "present"}
+    ]
+  }
+]

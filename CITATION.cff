@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use ForgetBench, please cite it."
+title: "ForgetBench: a benchmark for selective forgetting in LLM memory systems"
+authors:
+  - family-names: Gurbanov
+    given-names: Kamal
+    email: kamalgurbanov916@gmail.com
+version: 0.1.0
+date-released: 2026-05-31
+license: Apache-2.0
+repository-code: "https://github.com/kamaalg/forgetbench"
+keywords:
+  - llm
+  - memory
+  - benchmark
+  - forgetting
+  - evaluation

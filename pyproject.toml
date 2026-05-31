@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forgetbench"
+version = "0.1.0"
+description = "A pip-installable benchmark for selective forgetting in LLM memory systems."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Kamal Gurbanov", email = "kamalgurbanov916@gmail.com" }]
+keywords = ["llm", "memory", "benchmark", "forgetting", "evaluation", "gdpr", "mem0", "zep"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/kamaalg/forgetbench"
+Companion = "https://github.com/kamaalg/locomo-audit"
+
+[project.scripts]
+forgetbench = "forgetbench.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["forgetbench*"]
+
+[tool.setuptools.package-data]
+forgetbench = ["cases/*.json"]
