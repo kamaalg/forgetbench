@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ForgetBench — a benchmark for selective forgetting</title>
+<style>
+  :root{
+    --bg:#0a0e16; --bg2:#0e1422; --panel:#141c2e; --line:#26344e;
+    --ink:#eef2fa; --muted:#9fb0cc; --dim:#6c7c97;
+    --accent:#5b9dff; --accent2:#8b5cff; --green:#34d399; --red:#fb7185; --amber:#fbbf24;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--ink); overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  code,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+
+  /* deck */
+  .deck{height:100vh; width:100vw; position:relative}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column; justify-content:center;
+    padding:6vh 8vw; opacity:0; transition:opacity .4s ease;
+    background:radial-gradient(1100px 520px at 78% -10%, rgba(91,157,255,.10), transparent 60%),
+               radial-gradient(900px 500px at 10% 110%, rgba(139,92,255,.10), transparent 60%);
+  }
+  .slide.active{display:flex; opacity:1}
+  .kick{letter-spacing:.24em; text-transform:uppercase; font-size:13px; font-weight:700; color:var(--accent); margin-bottom:18px}
+  h1{font-size:clamp(34px,6vw,68px); line-height:1.04; font-weight:850; letter-spacing:-.02em}
+  h1 .grad{background:linear-gradient(90deg,#eaf1ff,#7fb0ff 60%,#a98bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  h2{font-size:clamp(26px,3.6vw,42px); font-weight:800; letter-spacing:-.01em; margin-bottom:8px}
+  .sub{font-size:clamp(16px,1.7vw,21px); color:var(--muted); max-width:62ch; margin-top:18px; line-height:1.5}
+  .lead{font-size:clamp(18px,2vw,24px); color:var(--ink); max-width:60ch; line-height:1.5}
+  ul{list-style:none; margin-top:22px; display:flex; flex-direction:column; gap:14px}
+  li{font-size:clamp(15px,1.7vw,20px); color:var(--ink); display:flex; gap:13px; align-items:flex-start; max-width:64ch}
+  li .b{flex:0 0 auto; width:9px; height:9px; border-radius:50%; margin-top:.55em; background:var(--accent)}
+  li small{display:block; color:var(--muted); font-size:.82em; margin-top:3px}
+  .muted{color:var(--muted)} .green{color:var(--green)} .red{color:var(--red)} .am{color:var(--amber)} .ac{color:var(--accent)}
+
+  .cards{display:grid; grid-template-columns:repeat(2,1fr); gap:18px; margin-top:26px; max-width:980px}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px}
+  .card h3{font-size:19px; margin-bottom:6px; display:flex; align-items:center; gap:10px}
+  .card p{color:var(--muted); font-size:15px; line-height:1.5}
+  .tag{font-size:11.5px; font-weight:800; padding:3px 9px; border-radius:999px; letter-spacing:.03em}
+  .tag.good{background:rgba(52,211,153,.14); color:var(--green); border:1px solid rgba(52,211,153,.3)}
+  .tag.bad{background:rgba(251,113,133,.13); color:var(--red); border:1px solid rgba(251,113,133,.3)}
+
+  table{width:100%; border-collapse:collapse; margin-top:24px; font-size:clamp(14px,1.6vw,19px); max-width:920px}
+  th,td{text-align:left; padding:14px 16px; border-bottom:1px solid var(--line)}
+  th{color:var(--muted); font-size:.72em; text-transform:uppercase; letter-spacing:.05em; font-weight:700}
+  td.n{font-variant-numeric:tabular-nums; font-weight:800}
+  tr.win td{background:rgba(52,211,153,.07)}
+  tr.lose td{background:rgba(251,113,133,.06)}
+  .bar{height:10px; border-radius:7px; background:#1e2a42; overflow:hidden; min-width:120px}
+  .bar > i{display:block; height:100%; border-radius:7px; background:linear-gradient(90deg,var(--accent),var(--accent2))}
+
+  .axisgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:26px; max-width:980px}
+  .ax{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px 20px}
+  .ax b{font-size:18px} .ax .code{color:var(--accent); font-size:14px} .ax p{color:var(--muted); margin-top:6px; font-size:15px; line-height:1.45}
+
+  pre{background:#0b1120; border:1px solid var(--line); border-radius:14px; padding:22px 24px; margin-top:26px;
+      font-size:clamp(13px,1.5vw,17px); line-height:1.6; max-width:820px; overflow:auto; color:#d6e2f7}
+  pre .k{color:#8b5cff} pre .s{color:#7fdca0} pre .c{color:var(--dim)} pre .f{color:#5b9dff}
+
+  .big{font-size:clamp(40px,8vw,90px); font-weight:900; line-height:1; letter-spacing:-.03em}
+  .formula{font-size:clamp(20px,2.6vw,34px); margin-top:24px; color:var(--ink); background:var(--panel);
+           border:1px solid var(--line); border-radius:14px; padding:20px 26px; display:inline-block}
+  .formula b{color:var(--green)} .formula .x{color:var(--accent)} .formula .y{color:var(--accent2)}
+
+  /* chrome */
+  .nav{position:fixed; bottom:22px; right:26px; display:flex; gap:10px; align-items:center; z-index:10}
+  .nav button{background:var(--panel); border:1px solid var(--line); color:var(--ink); width:42px; height:42px;
+              border-radius:11px; font-size:18px; cursor:pointer; transition:.15s}
+  .nav button:hover{border-color:var(--accent); color:var(--accent)}
+  .count{position:fixed; bottom:30px; left:26px; color:var(--dim); font-size:13px; z-index:10; letter-spacing:.05em}
+  .progress{position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,var(--accent),var(--accent2)); z-index:20; transition:width .4s ease}
+  .brand{position:fixed; top:22px; left:26px; font-weight:800; font-size:14px; letter-spacing:.02em; color:var(--muted); z-index:10}
+  .brand b{color:var(--ink)}
+  .hint{position:fixed; bottom:30px; left:50%; transform:translateX(-50%); color:var(--dim); font-size:12px; z-index:10}
+  @media(max-width:720px){ .cards,.axisgrid{grid-template-columns:1fr} .hint{display:none} }
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="brand"><b>ForgetBench</b> · v0.1</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 TITLE -->
+  <section class="slide active">
+    <div class="kick">Open-source benchmark · Apache-2.0 · pip installable</div>
+    <h1><span class="grad">Can your AI memory<br/>system actually forget?</span></h1>
+    <p class="sub">ForgetBench measures whether an LLM memory system can <b>delete a fact so it stops surfacing</b> —
+      without destroying the facts that should stay. One number, four failure modes, runs in 10 lines.</p>
+    <p class="sub mono" style="color:var(--dim)">Kamal Gurbanov · companion to the LoCoMo memory-evaluation audit</p>
+  </section>
+
+  <!-- 2 PROBLEM -->
+  <section class="slide">
+    <div class="kick">The gap</div>
+    <h2>Memory systems are built to <span class="ac">remember</span>.<br/>Almost none are tested on <span class="red">forgetting</span>.</h2>
+    <ul>
+      <li><span class="b"></span><div><b>Deletion is the hard, untested skill.</b><small>Research benchmarks find multi-hop forgetting failing as low as ~7% — but they ship as heavy papers, not as a tool you can run.</small></div></li>
+      <li><span class="b"></span><div><b>No memory product ships forgetting tests in CI.</b><small>Mem0, Zep, Letta — none give you a "did the delete actually work?" signal.</small></div></li>
+      <li><span class="b"></span><div><b>"We removed the row" ≠ "it no longer surfaces."</b><small>Staleness and GDPR / right-to-be-forgotten both need the second guarantee, and nobody measures it.</small></div></li>
+    </ul>
+  </section>
+
+  <!-- 3 WHAT IT MEASURES -->
+  <section class="slide">
+    <div class="kick">What it measures</div>
+    <h2>Two rates, scored together so they can't be gamed</h2>
+    <div class="cards">
+      <div class="card"><h3>🗑️ forget_recall</h3><p>Of the facts that should be <b>gone</b>, the fraction the system actually removed from retrieval. <span class="muted">Delete nothing → 0.0.</span></p></div>
+      <div class="card"><h3>🛡️ utility_preservation</h3><p>Of the facts that should <b>survive</b>, the fraction still retrievable. <span class="muted">Delete everything → 0.0.</span></p></div>
+    </div>
+    <div class="formula"><b>forget_score</b> = F1(&nbsp;<span class="x">forget_recall</span> , <span class="y">utility_preservation</span>&nbsp;)</div>
+    <p class="sub">High <b>only</b> when the system forgets the right things <b>and</b> keeps the rest — so a "delete everything" system scores ~0.</p>
+  </section>
+
+  <!-- 4 FOUR AXES -->
+  <section class="slide">
+    <div class="kick">Four failure axes · 12 cases</div>
+    <h2>The ways real memory systems leak</h2>
+    <div class="axisgrid">
+      <div class="ax"><b>Direct</b> <span class="code">direct</span><p>Delete fact F, probe F directly. The floor competency — does basic deletion even work?</p></div>
+      <div class="ax"><b>Multi-hop</b> <span class="code">multi_hop</span><p>Delete a fact another fact is <i>derived from</i>; its content must not leak back via the derived fact.</p></div>
+      <div class="ax"><b>Conditional</b> <span class="code">conditional</span><p>"Delete X but keep Y." Selective deletion of an obsolete value while the current one survives.</p></div>
+      <div class="ax"><b>Cross-domain</b> <span class="code">cross_domain</span><p>Delete F, then probe an <i>unrelated</i> topic; F must not resurface (no collateral leakage).</p></div>
+    </div>
+  </section>
+
+  <!-- 5 RESULTS -->
+  <section class="slide">
+    <div class="kick">Reference results · runs offline · $0</div>
+    <h2>The benchmark discriminates cleanly</h2>
+    <table>
+      <thead><tr><th>Reference system</th><th>forget_score</th><th></th><th>recall</th><th>utility</th></tr></thead>
+      <tbody>
+        <tr class="win"><td>KeywordMemory <span class="muted">— faithful, real deletion</span></td><td class="n green">1.000</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="n">1.000</td><td class="n">1.000</td></tr>
+        <tr class="lose"><td>LeakyMemory <span class="muted">— extraction-style, keeps a profile</span></td><td class="n red">0.000</td><td><div class="bar"><i style="width:2%"></i></div></td><td class="n red">0.000</td><td class="n">1.000</td></tr>
+      </tbody>
+    </table>
+    <p class="sub"><b class="red">LeakyMemory is the cautionary pattern.</b> It distills facts into a per-entity profile at ingest;
+      <span class="mono">delete()</span> drops the source document but <b>not</b> the profile — so everything stays answerable
+      (utility 1.0) while <b>every deleted fact leaks back</b> (recall 0.0). That's how extraction/summarization memory tends to fail.</p>
+  </section>
+
+  <!-- 6 HOW TO USE -->
+  <section class="slide">
+    <div class="kick">10 lines to benchmark your own system</div>
+    <h2>Implement four methods. Get one score.</h2>
+    <pre><span class="c"># pip install -e .  ·  then:</span>
+<span class="k">from</span> forgetbench <span class="k">import</span> run, Document, QueryResult
+
+<span class="k">class</span> <span class="f">MyMemory</span>:
+    <span class="k">def</span> <span class="f">ingest</span>(self, documents): ...     <span class="c"># iterable[Document]</span>
+    <span class="k">def</span> <span class="f">delete</span>(self, doc_id): ...        <span class="c"># your REAL deletion path</span>
+    <span class="k">def</span> <span class="f">query</span>(self, query): ...          <span class="c"># -> QueryResult(retrieved=[...])</span>
+    <span class="k">def</span> <span class="f">reset</span>(self): ...                <span class="c"># wipe between cases</span>
+
+report = <span class="f">run</span>(MyMemory())
+<span class="k">print</span>(report[<span class="s">"forget_score"</span>])</pre>
+    <p class="sub">One rule: <span class="mono">delete</span> must perform your <b>real</b> deletion — faking it is exactly what the multi-hop and cross-domain axes catch. A live <span class="mono">Mem0</span> adapter ships in the box.</p>
+  </section>
+
+  <!-- 7 ENGINEERING -->
+  <section class="slide">
+    <div class="kick">What's in v0.1</div>
+    <h2>Built to be trusted and extended</h2>
+    <ul>
+      <li><span class="b"></span><div><b>Ungameable score</b> — F1 of forget vs preserve; delete-all scores 0 (tested).</div></li>
+      <li><span class="b"></span><div><b>Case validator</b> — every contributed case must have a real delete target and both a "forget" and a "preserve" probe, or it's rejected on load.</div></li>
+      <li><span class="b"></span><div><b>Live Mem0 adapter</b> — handles async extraction by polling until memories are queryable (a blind sleep silently scores everything empty).</div></li>
+      <li><span class="b"></span><div><b>15 passing tests · synthetic data only · Apache-2.0</b> — no licensed data, runs anywhere, $0.</div></li>
+    </ul>
+  </section>
+
+  <!-- 8 CLOSE -->
+  <section class="slide">
+    <div class="kick">Roadmap</div>
+    <h2>Make "did it forget?" a one-line check</h2>
+    <ul>
+      <li><span class="b"></span><div>Zep &amp; Letta adapters (same retrieval-shaped interface).</div></li>
+      <li><span class="b"></span><div>Larger, community-contributed case set (PRs auto-validated).</div></li>
+      <li><span class="b"></span><div>LLM-judged retrieval check for paraphrase-robust leak detection.</div></li>
+      <li><span class="b"></span><div>Published comparison table across Mem0 / Zep / Letta + a short technical note.</div></li>
+    </ul>
+    <p class="sub" style="margin-top:30px"><span class="mono ac">github.com/kamaalg/forgetbench</span> &nbsp;·&nbsp; companion to the LoCoMo audit &nbsp;·&nbsp; honesty over hype</p>
+  </section>
+
+</div>
+
+<div class="count" id="count">01 / 08</div>
+<div class="hint">← → or Space to navigate</div>
+<div class="nav">
+  <button onclick="go(-1)" aria-label="previous">‹</button>
+  <button onclick="go(1)" aria-label="next">›</button>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let i = 0;
+  function show(n){
+    i = Math.max(0, Math.min(slides.length-1, n));
+    slides.forEach((s,k)=>s.classList.toggle('active', k===i));
+    document.getElementById('count').textContent =
+      String(i+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+    document.getElementById('prog').style.width = ((i+1)/slides.length*100)+'%';
+  }
+  function go(d){ show(i+d); }
+  window.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); go(1); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(-1); }
+    else if(e.key==='Home'){ show(0); } else if(e.key==='End'){ show(slides.length-1); }
+  });
+  // swipe + click-right-half
+  let x0=null;
+  document.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+  document.addEventListener('touchend',e=>{ if(x0===null)return; const dx=e.changedTouches[0].clientX-x0; if(Math.abs(dx)>40) go(dx<0?1:-1); x0=null; });
+  show(0);
+</script>
+</body>
+</html>
