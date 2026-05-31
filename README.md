@@ -79,6 +79,32 @@ The only rule: `delete` must perform your system's *real* deletion. Faking it
 (filtering just the exact string) is precisely the behavior the multi-hop and
 cross-domain axes are designed to catch.
 
+### Benchmarking Mem0
+
+A real adapter for the Mem0 hosted platform ships in the box (handles Mem0's
+*asynchronous* extraction by polling until memories are queryable, not a blind
+sleep — the lack of which makes naive runs silently score everything empty):
+
+```python
+from forgetbench.adapters.mem0_adapter import build_mem0
+import forgetbench
+
+report = forgetbench.run(build_mem0())   # needs MEM0_API_KEY + `pip install mem0ai`
+print(report["forget_score"])
+```
+
+Adapters for Zep and Letta are on the roadmap (the same retrieval-shaped
+interface applies).
+
+## Contributing cases
+
+Cases are plain JSON (`forgetbench/cases/cases.json`) and are **validated on
+load** — `forgetbench.validate_cases(...)` (raises `CaseValidationError`) enforces
+that every case has a known axis, real `delete_ids`, and **both** an "absent"
+probe (something to forget) and a "present" probe (something to preserve), so a
+contributed case can't accidentally make the score gameable. PRs adding cases
+are welcome; run `python -m pytest -q` and they'll be checked automatically.
+
 ## Install
 
 ```bash
@@ -89,11 +115,11 @@ python -m forgetbench     # run the bundled reference demo
 
 ## Status & roadmap
 
-v0.1 — 12 hand-authored cases (3 per axis), two reference adapters, the scoring
-contract, and a test suite. Cases are synthetic (no licensed data). Planned:
-adapters for Mem0/Zep/Letta, a larger community-contributable case set, and an
-LLM-judged retrieval check (beyond keyword coverage) for paraphrase-robust
-leak detection.
+v0.1 — 12 hand-authored cases (3 per axis), two reference adapters + a live
+Mem0 adapter, a case validator, the scoring contract, and a 15-test suite. Cases
+are synthetic (no licensed data). Planned: Zep/Letta adapters, a larger
+community-contributable case set, and an LLM-judged retrieval check (beyond
+keyword coverage) for paraphrase-robust leak detection.
 
 Companion to the [LoCoMo memory-evaluation audit](https://github.com/kamaalg/locomo-audit).
 

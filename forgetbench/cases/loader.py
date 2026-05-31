@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from ..tasks import ForgetCase, Probe
+from ..validate import validate_cases
 
 _CASES_JSON = Path(__file__).resolve().parent / "cases.json"
 
@@ -32,5 +33,8 @@ def load_cases_from_file(path: str | Path) -> list[ForgetCase]:
     return cases
 
 
-def load_default_cases() -> list[ForgetCase]:
-    return load_cases_from_file(_CASES_JSON)
+def load_default_cases(validate: bool = True) -> list[ForgetCase]:
+    cases = load_cases_from_file(_CASES_JSON)
+    if validate:
+        validate_cases(cases)
+    return cases

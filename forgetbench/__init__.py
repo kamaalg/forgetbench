@@ -15,6 +15,7 @@ from .core import Document, MemorySystem, QueryResult
 from .runner import format_report, run
 from .tasks import AXES, ForgetCase, Probe
 from .cases.loader import load_cases_from_file, load_default_cases
+from .validate import CaseValidationError, validate_cases
 
 __version__ = "0.1.0"
 
@@ -29,5 +30,7 @@ __all__ = [
     "AXES",
     "load_default_cases",
     "load_cases_from_file",
+    "validate_cases",
+    "CaseValidationError",
     "__version__",
 ]
