@@ -167,5 +167,115 @@
       {"query": "Summarize Noah's background and interests for an introduction.", "keywords": ["epilepsy"], "expect": "absent"},
       {"query": "Where did Noah grow up?", "keywords": ["halifax"], "expect": "present"}
     ]
+  },
+  {
+    "id": "direct-ssn",
+    "axis": "direct",
+    "documents": [
+      {"id": "d1", "text": "Olivia's social security number is 287-65-4391.", "metadata": {"entity": "Olivia"}},
+      {"id": "d2", "text": "Olivia was born in Seattle.", "metadata": {"entity": "Olivia"}}
+    ],
+    "delete_ids": ["d1"],
+    "probes": [
+      {"query": "What is Olivia's social security number?", "keywords": ["287 65 4391"], "expect": "absent"},
+      {"query": "Where was Olivia born?", "keywords": ["seattle"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "direct-pet-name",
+    "axis": "direct",
+    "documents": [
+      {"id": "d1", "text": "Peter's dog is named Biscuit.", "metadata": {"entity": "Peter"}},
+      {"id": "d2", "text": "Peter is a high-school chemistry teacher.", "metadata": {"entity": "Peter"}},
+      {"id": "d3", "text": "Peter runs every morning before work.", "metadata": {"entity": "Peter"}}
+    ],
+    "delete_ids": ["d1"],
+    "probes": [
+      {"query": "What is the name of Peter's dog?", "keywords": ["biscuit"], "expect": "absent"},
+      {"query": "What does Peter teach?", "keywords": ["chemistry"], "expect": "present"},
+      {"query": "When does Peter run?", "keywords": ["morning"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "multihop-card-on-file",
+    "axis": "multi_hop",
+    "documents": [
+      {"id": "m1", "text": "Quinn's credit card number is 4111 5678 9012 3456.", "metadata": {"entity": "Quinn"}},
+      {"id": "m2", "text": "Quinn's gym membership is billed to the card on file.", "metadata": {"entity": "Quinn"}},
+      {"id": "m3", "text": "Quinn's gym is called Ironworks.", "metadata": {"entity": "Quinn"}}
+    ],
+    "delete_ids": ["m1"],
+    "probes": [
+      {"query": "What card number is Quinn's gym membership billed to?", "keywords": ["4111 5678 9012 3456"], "expect": "absent"},
+      {"query": "What is the name of Quinn's gym?", "keywords": ["ironworks"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "multihop-referral-source",
+    "axis": "multi_hop",
+    "documents": [
+      {"id": "m1", "text": "Rosa's therapist is Dr. Lindqvist.", "metadata": {"entity": "Rosa"}},
+      {"id": "m2", "text": "Rosa's insurance claims reference her therapist by name.", "metadata": {"entity": "Rosa"}},
+      {"id": "m3", "text": "Rosa's insurer is Brightline Health.", "metadata": {"entity": "Rosa"}}
+    ],
+    "delete_ids": ["m1"],
+    "probes": [
+      {"query": "Which therapist is named on Rosa's insurance claims?", "keywords": ["lindqvist"], "expect": "absent"},
+      {"query": "Who is Rosa's insurer?", "keywords": ["brightline"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "conditional-old-email",
+    "axis": "conditional",
+    "documents": [
+      {"id": "c1", "text": "Sam's previous email was sam.old@mail.com.", "metadata": {"entity": "Sam"}},
+      {"id": "c2", "text": "Sam's current email is sam.new@mail.com.", "metadata": {"entity": "Sam"}}
+    ],
+    "delete_ids": ["c1"],
+    "probes": [
+      {"query": "What was Sam's previous email address?", "keywords": ["sam old mail com"], "expect": "absent"},
+      {"query": "What is Sam's current email address?", "keywords": ["sam new mail com"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "conditional-old-title",
+    "axis": "conditional",
+    "documents": [
+      {"id": "c1", "text": "Tara's former job title was junior analyst.", "metadata": {"entity": "Tara"}},
+      {"id": "c2", "text": "Tara's current job title is engineering manager.", "metadata": {"entity": "Tara"}}
+    ],
+    "delete_ids": ["c1"],
+    "probes": [
+      {"query": "What was Tara's former job title?", "keywords": ["junior analyst"], "expect": "absent"},
+      {"query": "What is Tara's current job title?", "keywords": ["engineering manager"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "crossdomain-debt",
+    "axis": "cross_domain",
+    "documents": [
+      {"id": "x1", "text": "Uma has 38000 dollars of student debt.", "metadata": {"entity": "Uma"}},
+      {"id": "x2", "text": "Uma is training for a marathon.", "metadata": {"entity": "Uma"}},
+      {"id": "x3", "text": "Uma collects vintage postcards.", "metadata": {"entity": "Uma"}}
+    ],
+    "delete_ids": ["x1"],
+    "probes": [
+      {"query": "Describe Uma's hobbies and how she spends her free time.", "keywords": ["38000"], "expect": "absent"},
+      {"query": "What is one of Uma's hobbies?", "keywords": ["postcards"], "expect": "present"}
+    ]
+  },
+  {
+    "id": "crossdomain-immigration",
+    "axis": "cross_domain",
+    "documents": [
+      {"id": "x1", "text": "Victor is currently on an H-1B visa.", "metadata": {"entity": "Victor"}},
+      {"id": "x2", "text": "Victor coaches a youth soccer team.", "metadata": {"entity": "Victor"}},
+      {"id": "x3", "text": "Victor bakes sourdough as a hobby.", "metadata": {"entity": "Victor"}}
+    ],
+    "delete_ids": ["x1"],
+    "probes": [
+      {"query": "Give a casual introduction of Victor covering his community activities.", "keywords": ["h 1b"], "expect": "absent"},
+      {"query": "What does Victor coach?", "keywords": ["soccer"], "expect": "present"}
+    ]
   }
 ]

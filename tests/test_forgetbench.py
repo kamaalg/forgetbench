@@ -20,9 +20,13 @@ from forgetbench.tasks import AXES
 
 def test_default_cases_load_and_cover_all_axes():
     cases = forgetbench.load_default_cases()
-    assert len(cases) >= 8
+    assert len(cases) >= 20
     covered = {c.axis for c in cases}
     assert covered == set(AXES), f"axes covered: {covered}"
+    # The bundled set is balanced: equal cases per axis.
+    from collections import Counter
+    counts = Counter(c.axis for c in cases)
+    assert len(set(counts.values())) == 1, f"unbalanced axes: {dict(counts)}"
 
 
 def test_keyword_memory_forgets_well():

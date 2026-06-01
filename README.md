@@ -93,8 +93,19 @@ report = forgetbench.run(build_mem0())   # needs MEM0_API_KEY + `pip install mem
 print(report["forget_score"])
 ```
 
-Adapters for Zep and Letta are on the roadmap (the same retrieval-shaped
-interface applies).
+Adapters for **Zep** and **Letta** ship too, with the same one-call factory pattern:
+
+```python
+from forgetbench.adapters.zep_adapter import build_zep        # needs zep-cloud + ZEP_API_KEY
+from forgetbench.adapters.letta_adapter import build_letta    # needs letta-client + a Letta server
+forgetbench.run(build_zep())
+forgetbench.run(build_letta())
+```
+
+All three live adapters are import-guarded (safe to import with no SDK/keys) and
+handle each vendor's quirks — async graph/extraction ingest is polled until
+queryable, deletion uses the vendor's real deletion path, and each case runs in a
+fresh namespace/agent so cases don't contaminate one another.
 
 ## Contributing cases
 
@@ -115,11 +126,12 @@ python -m forgetbench     # run the bundled reference demo
 
 ## Status & roadmap
 
-v0.1 — 12 hand-authored cases (3 per axis), two reference adapters + a live
-Mem0 adapter, a case validator, the scoring contract, and a 15-test suite. Cases
-are synthetic (no licensed data). Planned: Zep/Letta adapters, a larger
-community-contributable case set, and an LLM-judged retrieval check (beyond
-keyword coverage) for paraphrase-robust leak detection.
+v0.1 — 20 hand-authored cases (5 per axis), two reference adapters + live Mem0,
+Zep, and Letta adapters, a case validator, the scoring contract, and a 15-test
+suite. Cases are synthetic (no licensed data). Planned: a larger
+community-contributable case set, a published cross-vendor comparison table, and
+an LLM-judged retrieval check (beyond keyword coverage) for paraphrase-robust
+leak detection.
 
 Companion to the [LoCoMo memory-evaluation audit](https://github.com/kamaalg/locomo-audit).
 
