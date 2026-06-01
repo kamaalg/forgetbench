@@ -1,6 +1,31 @@
 # ForgetBench
 
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![tests](https://img.shields.io/badge/tests-15%20passing-brightgreen.svg)](tests/)
+[![data](https://img.shields.io/badge/data-synthetic%20(no%20licensed%20text)-green.svg)](forgetbench/cases/cases.json)
+[![python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
+[![adapters](https://img.shields.io/badge/adapters-Mem0%20%C2%B7%20Zep%20%C2%B7%20Letta-8b5cff.svg)](forgetbench/adapters/)
+
 **A pip-installable benchmark for *selective forgetting* in LLM memory systems.**
+
+> **TL;DR** — Memory systems are good at *remembering*; almost none are tested on *forgetting*.
+> ForgetBench gives you one number (`forget_score`, 0–1) for whether a system can **delete a fact so
+> it stops surfacing** without wrecking the facts that should stay — across 4 failure axes, in ~10
+> lines, $0, offline.
+
+### Reference scores (bundled, runs offline, $0)
+
+| System | forget_score | forget_recall | utility_preservation |
+|---|---:|---:|---:|
+| `KeywordMemory` — faithful store, real per-doc deletion | **1.000** | 1.000 | 1.000 |
+| `LeakyMemory` — extraction-style, keeps a distilled profile | **0.000** | 0.000 | 1.000 |
+
+`LeakyMemory` is the cautionary pattern: it keeps everything answerable (utility 1.0) but **leaks
+every deleted fact** (recall 0.0) — exactly how summarization/extraction memory tends to fail, and
+exactly what the benchmark surfaces. 20 cases, balanced 5 per axis; `forget_score` is the harmonic
+mean of the two rates, so deleting everything can't game it.
+
+---
 
 Memory products (Mem0, Zep, Letta, and home-grown stores) are tuned to *remember*.
 The hard, under-tested skill is the opposite: when you tell a memory system to
